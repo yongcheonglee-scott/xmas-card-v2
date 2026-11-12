@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>크리스마스 메시지 카드</title>
+<meta name="description" content="마음을 전하는 크리스마스 메시지 카드">
+<!-- Link preview (카카오톡·문자·메신저). og:image/og:url must be absolute URLs:
+     build_dist.py replaces https://yongcheonglee-scott.github.io/xmas-card-v2/ with the deployed site's address. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="크리스마스 메시지 카드">
+<meta property="og:title" content="크리스마스 메시지 카드가 도착했어요 🎄">
+<meta property="og:description" content="영상과 함께 전하는 따뜻한 크리스마스 인사. 열어서 확인해 보세요.">
+<meta property="og:image" content="https://yongcheonglee-scott.github.io/xmas-card-v2/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://yongcheonglee-scott.github.io/xmas-card-v2/">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="크리스마스 메시지 카드가 도착했어요 🎄">
+<meta name="twitter:description" content="영상과 함께 전하는 따뜻한 크리스마스 인사. 열어서 확인해 보세요.">
+<meta name="twitter:image" content="https://yongcheonglee-scott.github.io/xmas-card-v2/assets/og-image.jpg">
+<!-- PWA / phone app-like -->
+<meta name="theme-color" content="#10162e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="크리스마스 카드">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/gsk-logo.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<script src="assets/vendor/html2canvas.min.js"></script>
+<style>
+  /* card message font */
+  /* card text font: Bold for the recipient line, Light for the message + signature */
+  @font-face{ font-family:'KimjungchulMyungjo'; src:url('assets/KimjungchulMyungjo-Light.woff2') format('woff2'), url('assets/KimjungchulMyungjo-Light.otf') format('opentype'); font-weight:300; font-display:swap; }
+  @font-face{ font-family:'KimjungchulMyungjo'; src:url('assets/KimjungchulMyungjo-Bold.woff2') format('woff2'), url('assets/KimjungchulMyungjo-Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
+  /* everything-else font */
+  @font-face{ font-family:'Paperlogy'; src:url('assets/Paperlogy-3Light.ttf') format('truetype'); font-weight:300; font-display:swap; }
+  @font-face{ font-family:'Paperlogy'; src:url('assets/Paperlogy-5Medium.ttf') format('truetype'); font-weight:400 500; font-display:swap; }
+  @font-face{ font-family:'Paperlogy'; src:url('assets/Paperlogy-6SemiBold.ttf') format('truetype'); font-weight:600; font-display:swap; }
+  @font-face{ font-family:'Paperlogy'; src:url('assets/Paperlogy-7Bold.ttf') format('truetype'); font-weight:700; font-display:swap; }
+  @font-face{ font-family:'Paperlogy'; src:url('assets/Paperlogy-8ExtraBold.ttf') format('truetype'); font-weight:800; font-display:swap; }
+  @font-face{ font-family:'Paperlogy'; src:url('assets/Paperlogy-9Black.ttf') format('truetype'); font-weight:900; font-display:swap; }
+  :root{
+    --orange:#b5122c; --orange2:#e0393e;   /* 크리스마스 레드 (변수명은 유지) */
+    --card-font:'KimjungchulMyungjo','Gowun Batang',serif;     /* 카드 텍스트 전용 */
+    --sans:'Paperlogy',Pretendard,system-ui,sans-serif;        /* 그 외 전체 */
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:#e9e4da;
+    font-family:var(--sans);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100dvh;padding:0;
+  }
+  /* Phone stage: full screen on mobile, framed card on desktop */
+  #stage{
+    position:relative;width:100vw;height:100dvh;max-width:none;
+    background:#000;overflow:hidden;
+  }
+  @media (min-width:600px){
+    body{padding:28px}
+    #stage{
+      width:402px;height:min(874px,calc(100dvh - 56px));
+      border-radius:46px;
+      box-shadow:0 40px 90px rgba(20,16,10,.45),0 0 0 11px #1c1c20,0 0 0 13px #2c2c32;
+    }
+  }
+  .screen{position:absolute;inset:0;display:none;flex-direction:column}
+  .screen.active{display:flex}
+
+  @keyframes hb-drift{from{transform:scale(1)}to{transform:scale(1.06)}}
+  @keyframes ap-fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes ap-rise{0%{opacity:0;transform:translateY(40px) scale(.9)}100%{opacity:1;transform:translateY(0) scale(1)}}
+  @keyframes ap-glow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.95;transform:scale(1.05)}}
+  @keyframes ap-twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+  @keyframes ap-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+  @keyframes ap-float{0%{transform:translateY(0) rotate(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-130px) rotate(20deg);opacity:0}}
+  @keyframes ap-pop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+  @keyframes cf-glow{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.9;transform:scale(1.06)}}
+  @keyframes cf-twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+  @keyframes cf-drift{0%{transform:translateX(0)}100%{transform:translateX(26px)}}
+  @keyframes cf-sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+  @keyframes cf-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  @keyframes cf-spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+
+  .ap-btn{transition:transform .15s ease, box-shadow .2s ease, opacity .2s ease;cursor:pointer;user-select:none}
+  .ap-btn:active{transform:scale(.97)}
+  .ap-btn.pressed{animation:ap-press .32s ease both}
+  @keyframes ap-press{0%{transform:scale(1)}35%{transform:scale(.93);filter:brightness(.86)}100%{transform:scale(1);filter:brightness(1)}}
+  /* centered confirmation popup (share link copied / image saved) */
+  .popup{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:90;pointer-events:none;opacity:0;transition:opacity .25s ease}
+  .popup.show{opacity:1}
+  .popup-box{background:rgba(30,25,20,.92);color:#fff;border-radius:22px;padding:24px 30px 22px;min-width:200px;max-width:78%;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.4);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  .popup.show .popup-box{animation:ap-pop .38s cubic-bezier(.2,.8,.2,1) both}
+  .popup-ic{font-size:36px;line-height:1;margin-bottom:10px}
+  .popup-tx{font-size:14.5px;font-weight:700;letter-spacing:-.2px;line-height:1.45;word-break:keep-all}
+  .popup-sub{font-size:11px;font-weight:500;color:rgba(255,255,255,.6);margin-top:4px}
+  /* message-screen preview: cropped to the message panel, tap to zoom */
+  .pv-wrap{position:relative;margin:0 auto 14px;border-radius:14px;overflow:hidden;box-shadow:0 8px 22px rgba(0,0,0,.14);cursor:zoom-in;-webkit-tap-highlight-color:transparent}
+  .pv-card{position:absolute}
+  .pv-hint{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.42);color:#fff;font-size:10px;font-weight:700;padding:4px 9px;border-radius:99px;pointer-events:none;backdrop-filter:blur(4px)}
+  .zoom{position:absolute;inset:0;z-index:92;display:flex;align-items:center;justify-content:center;background:rgba(5,7,15,0);transition:background .35s ease;cursor:zoom-out}
+  .zoom.on{background:rgba(5,7,15,.84)}
+  .zoom-card{position:relative;border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55);transform-origin:center center;will-change:transform;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s ease}
+  .zoom-cap{position:absolute;left:0;right:0;bottom:calc(26px + env(safe-area-inset-bottom));text-align:center;color:rgba(255,255,255,.7);font-size:12px;font-weight:600;opacity:0;transition:opacity .3s ease .2s;pointer-events:none}
+  .zoom.on .zoom-cap{opacity:1}
+  /* long-press-to-save fallback viewer */
+  .imgsheet{position:absolute;inset:0;z-index:95;background:rgba(5,7,15,.97);display:flex;flex-direction:column;align-items:center;padding:calc(16px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));animation:ap-fade .25s ease both}
+  .imgsheet-top{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff;font-size:13px;line-height:1.45;margin-bottom:14px}
+  .imgsheet-top b{color:#f3c96b}
+  .imgsheet-x{flex:0 0 auto;border:1.5px solid rgba(255,255,255,.35);border-radius:99px;padding:8px 16px;font-size:12.5px;font-weight:700;color:#fff}
+  .imgsheet img{flex:1;min-height:0;max-width:100%;object-fit:contain;border-radius:14px;-webkit-touch-callout:default;user-select:auto;-webkit-user-select:auto}
+  .ap-cell{transition:transform .18s ease;cursor:pointer}
+  .ap-cell:active{transform:scale(.96)}
+  .cta{border-radius:15px;background:linear-gradient(135deg,var(--orange2),var(--orange));box-shadow:0 8px 20px rgba(181,18,44,.32);padding:15px 0;text-align:center}
+  .cta span{font-size:15px;font-weight:700;color:#fff}
+  .cta.disabled{opacity:.45;pointer-events:none;filter:grayscale(.2)}
+  .ghost{border-radius:15px;border:1.5px solid #ddd3c2;padding:15px 0;text-align:center;color:#6b6356;font-size:14px;font-weight:600}
+  .field{width:100%;border:1.5px solid #e6dccb;background:#fff;border-radius:13px;padding:14px 15px;font-size:15px;font-family:var(--sans);color:#2c2722;outline:none;transition:border-color .15s}
+  .field:focus{border-color:var(--orange2)}
+  .lbl{display:block;font-size:11px;font-weight:700;letter-spacing:1px;color:#a59c8d;margin:0 0 6px}
+  .barbg{height:3px;background:#efe6d6;border-radius:99px;overflow:hidden}
+  .barfg{height:100%;background:linear-gradient(90deg,var(--orange2),var(--orange));border-radius:99px;transition:width .35s ease}
+  .step{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--orange)}
+  .h2{margin:16px 0 2px;font-family:var(--sans);font-size:24px;font-weight:700;color:#2c2722}
+  .sub{margin:0;font-size:12.5px;color:#8a8175}
+  .scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch}
+  .scroll::-webkit-scrollbar{width:0}
+  .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:5px}
+  .chips::-webkit-scrollbar{height:0}
+  .chip{flex:0 0 auto;border:1.5px solid #e6dccb;background:#fff;border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:600;color:#6b6356;white-space:nowrap}
+  .chip.on{background:linear-gradient(135deg,var(--orange2),var(--orange));border-color:transparent;color:#fff;box-shadow:0 4px 12px rgba(181,18,44,.3)}
+  .logo{height:24px;width:auto;filter:drop-shadow(0 2px 8px rgba(0,0,0,.3))}
+  /* GSK logo fallback (text) if image missing */
+  .logo-txt{font-family:var(--sans);font-weight:800;letter-spacing:.5px;color:#ef7a3d;font-size:18px;line-height:1}
+  .toast{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);background:#2c2722;color:#fff;font-size:12.5px;font-weight:600;padding:11px 20px;border-radius:99px;box-shadow:0 8px 24px rgba(0,0,0,.3);white-space:nowrap;z-index:80;opacity:0;pointer-events:none;transition:opacity .2s}
+  .toast.show{opacity:1;animation:toast-in .3s ease}
+  @keyframes toast-in{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.92)}100%{opacity:1;transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<script>
+"use strict";
+/* ---------------- data ---------------- */
+/* image-based card templates (all light-paper backgrounds → dark ink) */
+/* w/h = source pixel size (for the aspect-locked card box)
+   pad = message-panel insets in % of the image [top, right, bottom, left],
+         measured from the cream paper area of each template with a margin
+         so text never touches the gold frame. */
+const THEMES = [
+  { id:"t1", img:"assets/design_template1.jpg", w:1120, h:1980, pad:[18.3, 12.0, 44.0, 12.0] },   /* 집 앞의 산타와 루돌프 */
+  { id:"t2", img:"assets/design_template2.jpg", w:1120, h:1980, pad:[17.4, 12.3, 43.4, 12.1] },   /* 벽난로 거실과 루돌프 */
+  { id:"t3", img:"assets/design_template3.jpg", w:1120, h:1980, pad:[24.1, 12.8, 36.7, 12.9] },   /* 달 위 썰매와 눈 마을 */
+  { id:"t4", img:"assets/design_template4.jpg", w:1120, h:1980, pad:[19.2, 11.7, 41.8, 11.7] },   /* 트리와 눈사람, 루돌프 */
+];
+const THEME = THEMES.reduce((m,t)=>(m[t.id]=t, m), {});
+const PV_SCALE = 0.6;   /* message-screen preview: card rendered at this fraction of the full card width */
+const PV_MARGIN = 2.5;  /* % of the card kept around the message panel so the gold frame stays visible */
+const THEME_IMG = THEMES.reduce((m,t)=>(m[t.id]=t.img, m), {});
+const DARK = [];   // templates are light backgrounds
+const PRESETS = [
+  { label:"따뜻한 성탄", text:"따뜻하고 행복한\n성탄절 보내시고\n새해 복 많이 받으세요." },
+  { label:"감사 인사", text:"한 해 동안 감사했습니다\n평안하고 즐거운\n크리스마스 되세요." },
+  { label:"건강 기원", text:"늘 건강하시고\n사랑이 가득한\n연말 보내시길 바랍니다." },
+  { label:"새해 소망", text:"소망하시는 모든 일\n새해에 이루어지길\n진심으로 기원합니다." },
+  { label:"가족 안부", text:"사랑하는 가족과 함께\n따뜻한 온기를 나누는\n행복한 성탄절 되세요." },
+];
+
+/* ---------------- theme art ---------------- */
+function themeArt(t){
+  switch(t){
+    case "moon": return `
+      <div style="position:absolute;inset:0;background:linear-gradient(170deg,#222a4d 0%,#1b2240 55%,#10162e 100%)"></div>
+      <div style="position:absolute;top:8%;right:14%;width:30%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 38% 35%,#fdf3d4,#f6dca0 60%,#e9c578);box-shadow:0 0 40px 8px rgba(252,231,176,.45);animation:cf-glow 6s ease-in-out infinite"></div>
+      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+        <g fill="#fbf1dc"><circle cx="50" cy="60" r="1.6" style="animation:cf-twinkle 3s ease-in-out infinite"/><circle cx="110" cy="40" r="1.1" style="animation:cf-twinkle 4s .6s ease-in-out infinite"/><circle cx="40" cy="150" r="1.3" style="animation:cf-twinkle 3.5s 1s ease-in-out infinite"/><circle cx="160" cy="200" r="1" style="animation:cf-twinkle 4.5s .3s ease-in-out infinite"/><circle cx="250" cy="250" r="1.4" style="animation:cf-twinkle 3.2s .9s ease-in-out infinite"/><circle cx="80" cy="250" r="1.1" style="animation:cf-twinkle 5s .2s ease-in-out infinite"/></g>
+        <g style="animation:cf-drift 14s ease-in-out infinite alternate" opacity=".4"><path d="M120 150 q14 -12 30 0 q16 -10 30 2 q14 -2 18 6 l-86 0 q-4 -10 8 -14z" fill="#cdd6ef"/></g>
+      </svg>`;
+    case "songpyeon": return `
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg,#e6efe4 0%,#cfe0d0 100%)"></div>
+      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+        <g style="animation:cf-bob 5s ease-in-out infinite;transform-origin:center" transform="translate(0,30)">
+          <path d="M70 210 a55 55 0 0 1 110 0 z" fill="#b9d4ad"/><path d="M70 210 a55 55 0 0 1 110 0" fill="none" stroke="#9cc090" stroke-width="2"/>
+          <path d="M120 230 a52 48 0 0 1 104 0 z" fill="#e7b7c4"/><path d="M120 230 a52 48 0 0 1 104 0" fill="none" stroke="#d79aab" stroke-width="2"/>
+          <path d="M100 250 a48 44 0 0 1 96 0 z" fill="#f0e6cf"/><path d="M100 250 a48 44 0 0 1 96 0" fill="none" stroke="#d8c79e" stroke-width="2"/>
+          <g stroke="#7fa876" stroke-width="2" stroke-linecap="round"><path d="M150 252 l-8 -16"/><path d="M158 252 l4 -18"/><path d="M142 252 l-2 -18"/></g>
+        </g>
+      </svg>`;
+    case "pampas": return `
+      <div style="position:absolute;inset:0;background:linear-gradient(170deg,#f7e4d2 0%,#efc9ab 70%,#e3b08c 100%)"></div>
+      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+        <circle cx="220" cy="80" r="34" fill="#fef0d8" opacity=".85"/>
+        <g fill="none" stroke="#c98f63" stroke-width="2.4" stroke-linecap="round" style="transform-origin:50% 100%;animation:cf-sway 7s ease-in-out infinite">
+          <path d="M70 400 C66 300 78 240 72 180"/><path d="M120 400 C118 320 108 250 122 200"/><path d="M180 400 C182 310 192 250 178 190"/><path d="M235 400 C236 330 226 270 240 220"/>
+        </g>
+        <g stroke="#dcae84" stroke-width="1.6" stroke-linecap="round" opacity=".8" style="transform-origin:50% 100%;animation:cf-sway 7s ease-in-out infinite"><path d="M72 180 l-10 -8 M72 180 l8 -10 M72 175 l-6 -12 M122 200 l-9 -9 M122 200 l9 -8 M178 190 l-9 -8 M178 190 l8 -9 M240 220 l-9 -8 M240 220 l9 -8"/></g>
+      </svg>`;
+    case "hanji": return `
+      <div style="position:absolute;inset:0;background:linear-gradient(160deg,#ff9a4d 0%,#f3702f 55%,#e2531d 100%)"></div>
+      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+        <path d="M40 150 a110 110 0 0 1 220 0" fill="none" stroke="#ffe7c4" stroke-width="2.5" opacity=".9"/>
+        <path d="M70 150 a80 80 0 0 1 160 0" fill="none" stroke="#ffe7c4" stroke-width="1.5" opacity=".5"/>
+        <circle cx="150" cy="92" r="20" fill="#fff2dd" opacity=".95"/>
+        <g fill="#ffd9b0" opacity=".5"><circle cx="60" cy="250" r="1.6"/><circle cx="240" cy="280" r="1.6"/><circle cx="120" cy="300" r="1.4"/><circle cx="200" cy="230" r="1.3"/><circle cx="90" cy="210" r="1.2"/></g>
+      </svg>`;
+    case "persimmon": return `
+      <div style="position:absolute;inset:0;background:linear-gradient(165deg,#fbf3e6 0%,#f3e6cf 100%)"></div>
+      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+        <g style="transform-origin:150px 80px;animation:cf-sway 8s ease-in-out infinite">
+          <path d="M90 70 Q150 60 220 90" fill="none" stroke="#9c7a4f" stroke-width="3" stroke-linecap="round"/>
+          <g transform="translate(118,150)"><circle r="36" fill="#ef6f3c"/><circle r="36" fill="none" stroke="#d85c2c" stroke-width="2"/><path d="M-12 -34 l12 8 l12 -8 l-4 14 l-16 0z" fill="#7fa05a"/><path d="M0 -26 l0 -10" stroke="#7a5a36" stroke-width="3" stroke-linecap="round"/></g>
+          <g transform="translate(196,178)"><circle r="30" fill="#f2814b"/><circle r="30" fill="none" stroke="#dd6a36" stroke-width="2"/><path d="M-10 -28 l10 7 l10 -7 l-3 12 l-14 0z" fill="#8aaa63"/></g>
+          <path d="M150 100 q40 -6 60 24 q-4 -34 -60 -24z" fill="#8aaa63"/>
+        </g>
+      </svg>`;
+    case "cosmos": return `
+      <div style="position:absolute;inset:0;background:linear-gradient(165deg,#fdeef1 0%,#f6d9e2 100%)"></div>
+      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+        <g fill="none" stroke="#cf8aa0" stroke-width="2" stroke-linecap="round" style="transform-origin:50% 100%;animation:cf-sway 9s ease-in-out infinite"><path d="M90 400 C88 320 96 260 92 210"/><path d="M150 400 C152 330 144 270 150 200"/><path d="M212 400 C214 330 206 280 210 230"/></g>
+        <g style="transform-origin:50% 100%;animation:cf-sway 9s ease-in-out infinite">
+          <g transform="translate(92,200)"><circle r="6" fill="#f0b94e"/><g fill="#f2a8c0"><ellipse cx="0" cy="-15" rx="6" ry="13"/><ellipse cx="14" cy="-5" rx="6" ry="13" transform="rotate(72 14 -5)"/><ellipse cx="9" cy="13" rx="6" ry="13" transform="rotate(144 9 13)"/><ellipse cx="-9" cy="13" rx="6" ry="13" transform="rotate(216 -9 13)"/><ellipse cx="-14" cy="-5" rx="6" ry="13" transform="rotate(288 -14 -5)"/></g></g>
+          <g transform="translate(150,190)"><circle r="6" fill="#f0b94e"/><g fill="#fff"><ellipse cx="0" cy="-15" rx="6" ry="13"/><ellipse cx="14" cy="-5" rx="6" ry="13" transform="rotate(72 14 -5)"/><ellipse cx="9" cy="13" rx="6" ry="13" transform="rotate(144 9 13)"/><ellipse cx="-9" cy="13" rx="6" ry="13" transform="rotate(216 -9 13)"/><ellipse cx="-14" cy="-5" rx="6" ry="13" transform="rotate(288 -14 -5)"/></g></g>
+          <g transform="translate(210,220)"><circle r="5" fill="#f0b94e"/><g fill="#ec92ad"><ellipse cx="0" cy="-13" rx="5" ry="11"/><ellipse cx="12" cy="-4" rx="5" ry="11" transform="rotate(72 12 -4)"/><ellipse cx="8" cy="11" rx="5" ry="11" transform="rotate(144 8 11)"/><ellipse cx="-8" cy="11" rx="5" ry="11" transform="rotate(216 -8 11)"/><ellipse cx="-12" cy="-4" rx="5" ry="11" transform="rotate(288 -12 -4)"/></g></g>
+        </g>
+      </svg>`;
+    case "rabbit": return `
+      <div style="position:absolute;inset:0;background:linear-gradient(170deg,#2b3566 0%,#202a52 60%,#161e3d 100%)"></div>
+      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+        <g fill="#fbf1dc"><circle cx="60" cy="70" r="1.5" style="animation:cf-twinkle 3.4s ease-in-out infinite"/><circle cx="230" cy="60" r="1.2" style="animation:cf-twinkle 4s .5s ease-in-out infinite"/><circle cx="40" cy="300" r="1.3" style="animation:cf-twinkle 3.8s 1s ease-in-out infinite"/><circle cx="260" cy="320" r="1.4" style="animation:cf-twinkle 3.1s .4s ease-in-out infinite"/></g>
+        <circle cx="150" cy="150" r="72" fill="#fdf3d4" opacity=".96" style="transform-origin:150px 150px;animation:cf-glow 7s ease-in-out infinite"/>
+        <g fill="#c9b27e" opacity=".85" transform="translate(150,158)"><ellipse cx="-6" cy="14" rx="16" ry="22"/><path d="M-6 -8 q-4 -22 -16 -30 q2 18 10 30z"/><path d="M-2 -8 q2 -22 -6 -32 q-4 18 0 32z"/><ellipse cx="20" cy="22" rx="14" ry="9" transform="rotate(20 20 22)"/></g>
+      </svg>`;
+    case "dancheong": return `
+      <div style="position:absolute;inset:0;background:linear-gradient(165deg,#1f5e54 0%,#16463f 100%)"></div>
+      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">
+        <g transform="translate(150,150)" style="transform-origin:0 0;animation:cf-spin 60s linear infinite">
+          <circle r="70" fill="none" stroke="#e8a13c" stroke-width="3"/>
+          <circle r="54" fill="none" stroke="#d65b4a" stroke-width="3"/>
+          <circle r="38" fill="none" stroke="#3f86b5" stroke-width="3"/>
+          <circle r="20" fill="#e8a13c"/>
+          <g stroke="#7fb98f" stroke-width="3" fill="none"><path d="M0 -70 v18 M0 70 v-18 M-70 0 h18 M70 0 h-18 M-49 -49 l13 13 M49 49 l-13 -13 M49 -49 l-13 13 M-49 49 l13 -13"/></g>
+        </g>
+        <g fill="#dfeee2" opacity=".5"><circle cx="50" cy="320" r="1.5"/><circle cx="250" cy="300" r="1.5"/><circle cx="150" cy="350" r="1.3"/></g>
+      </svg>`;
+    default: return "";
+  }
+}
+
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+const THEME_OVERLAY = `<div style="position:absolute;inset:0;border-radius:16px;border:3px solid #b5122c;box-shadow:inset 0 0 0 2px rgba(255,255,255,.6)"></div><div style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:#b5122c;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.25);animation:ap-pop .25s ease both"><svg width="13" height="13" viewBox="0 0 13 13"><path d="M2 7l3 3 6-7" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+
+/* variant: 'art' (template only) | 'mini' (small live preview) | 'full' (full-screen card)
+
+   The new templates carry their own message panel (cream paper inside a gold
+   frame), so the text is positioned against the panel, not the screen. That
+   means the overlay has to line up with the image's *rendered* box, which
+   object-fit:contain does not expose. So the image and the overlay share one
+   aspect-locked box instead: width:100% + aspect-ratio reproduces contain for
+   any container taller than the art (every phone), and the blurred cover copy
+   behind it fills whatever letterbox is left. */
+function cardFace(opts){
+  const { theme, variant="art", to="", from="", message="", width=0 } = opts;
+  const T = THEME[theme] || THEMES[0];
+  const IMG = T.img;
+  const ink = "#3a332b";
+  const subInk = "rgba(58,51,43,.6)";
+  const [pt, pr, pb, pl] = T.pad;
+
+  const toTxt = to ? esc(to)+"," : "";
+  const fromName = from ? from.trim() : "";
+  const fromTxt = fromName ? "- "+esc(fromName)+" -" : "";
+
+  let panel = "";
+  if(variant !== "art"){
+    /* The full card fills the stage width (k = 1). Any other rendering passes its own card
+       width and becomes an exact scale model (same font-size : width ratio), so text wraps
+       on the same words and the line count measured on the preview matches the real card. */
+    const stageW = (typeof stage !== "undefined" && stage && stage.clientWidth) || 402;
+    const k = width ? width / stageW : 1;
+    const r = v => +(v * k).toFixed(2);
+    const fsName = r(19);             /* 받는 분 */
+    const fsMsg  = fsName;            /* 본문: 받는 분과 동일 크기 */
+    const fsFrom = r(14.5);           /* 서명: 가장 작게 */
+    const gapTop = r(16);
+    const gapBot = r(20);
+    panel = `<div class="cf-panel" style="position:absolute;top:${pt}%;right:${pr}%;bottom:${pb}%;left:${pl}%;display:flex;align-items:center;justify-content:center;overflow:hidden">
+        <div style="width:100%;text-align:center;font-family:var(--card-font);color:${ink}">
+          ${toTxt?`<div style="font-size:${fsName}px;font-weight:700;margin:0 0 ${gapTop}px;color:${ink}">${toTxt}</div>`:``}
+          <div class="cf-msg" data-fs="${fsMsg}" style="font-size:${fsMsg}px;font-weight:300;line-height:1.75;white-space:pre-wrap;word-break:keep-all">${esc(message)}</div>
+          ${fromTxt?`<div style="font-size:${fsFrom}px;font-weight:300;margin:${gapBot}px 0 0;color:${subInk}">${fromTxt}</div>`:``}
+        </div>
+      </div>`;
+  }
+
+  return `<div style="position:absolute;inset:0;overflow:hidden;font-family:var(--sans)">
+    <img src="${IMG}" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(16px);transform:scale(1.12)">
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+      <div class="cf-card" style="position:relative;width:100%;aspect-ratio:${T.w}/${T.h}">
+        <img src="${IMG}" alt="" style="position:absolute;inset:0;width:100%;height:100%;display:block">
+        ${panel}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* Messages are capped at 3 lines / 120 chars, but keep-all wrapping can still
+   push a long line past the panel. Shrink the message until it fits. */
+function fitCards(root){
+  (root || stage).querySelectorAll(".cf-panel").forEach(p => {
+    const msg = p.querySelector(".cf-msg");
+    if(!msg) return;
+    const block = msg.parentElement;
+    let fs = parseFloat(msg.dataset.fs) || 30;
+    msg.style.fontSize = fs + "px";
+    let guard = 60;
+    while(guard-- > 0 && block.scrollHeight > p.clientHeight && fs > 8){
+      fs -= 0.5;
+      msg.style.fontSize = fs + "px";
+    }
+  });
+}
+
+/* logo: image with text fallback */
+function logo(h){ return `<img src="assets/gsk-logo.png" alt="GSK" style="height:${h}px;width:auto" onerror="this.outerHTML='<span class=\\'logo-txt\\' style=\\'font-size:${Math.round(h*0.8)}px\\'>GSK</span>'">`; }
+
+/* ---------------- state ---------------- */
+const S = { screen:"home", theme:"t1", to:"", from:"", message:"", progress:0, vlines:0 };
+const stage = document.getElementById("stage");
+let _iv, _to, _ct, _pt;
+
+const MAX_LINES = 6;
+function canMake(){ return S.to.trim() && S.from.trim() && S.message.trim() && S.vlines <= MAX_LINES; }
+/* Visual line count: how many lines the message actually occupies on the card,
+   including soft wraps. Measured on the mini preview (same proportions as the
+   full card) at the nominal font size, before fitCards shrinks it. */
+function measureLines(holder){
+  const msg = holder && holder.querySelector(".cf-msg");
+  if(!msg || !S.message.trim()) return 0;
+  msg.style.fontSize = (parseFloat(msg.dataset.fs) || 9) + "px";
+  const lh = parseFloat(getComputedStyle(msg).lineHeight) || 1;
+  return Math.max(1, Math.round(msg.getBoundingClientRect().height / lh));
+}
+function refreshCount(){
+  const el = document.getElementById("msg-count");
+  const hint = document.getElementById("msg-hint");
+  const n = S.vlines;
+  if(el){
+    el.textContent = `최대 ${MAX_LINES}줄 · ${n}/${MAX_LINES}`;
+    el.style.color = n > MAX_LINES ? "#d94f3d" : n === MAX_LINES ? "#c9962e" : "#bcb3a3";
+  }
+  if(hint){
+    const over = n > MAX_LINES;
+    hint.textContent = over
+      ? `카드에 ${n}줄로 표시돼요. ${MAX_LINES}줄 안에 들어오도록 문구를 조금 줄여주세요.`
+      : MSG_HINT;
+    hint.style.color = over ? "#d94f3d" : "#bcb3a3";
+  }
+}
+const MSG_HINT = `카드에 표시되는 줄 기준 최대 ${MAX_LINES}줄이에요. Enter 키로 줄을 바꿔 줄바꿈을 직접 조절할 수 있어요.`;
+function go(s){ S.screen = s; render(); }
+
+const VIDEO_SRC = "assets/greeting.mp4";   /* 인사 영상 파일 */
+const CARD_AT = 14.0;                       /* 음악 마지막 화음(13초) 뒤 여운에서 카드가 1초간 떠오름 → 15초에 음악 끝 + 카드 완성 */
+
+function startMaking(){
+  if(!canMake()) return;
+  go("making");
+}
+
+/* video intro: keep the video playing (audio continues); at CARD_AT reveal the card
+   on top (over the video's black part). Falls back to moon loader if no video. */
+function setupIntro(mode){
+  const v = document.getElementById("intro");
+  let done = false;
+  const reveal = ()=>{
+    if(done) return; done = true;
+    const card = document.getElementById("capture");
+    const acts = document.getElementById("introActions");
+    const ctrls = document.getElementById("introControls");
+    if(ctrls){ ctrls.style.opacity = "0"; ctrls.style.pointerEvents = "none"; }
+    if(card){ card.style.opacity = "1"; }              // opaque card fades in over the video
+    if(acts){ acts.style.opacity = "1"; acts.style.pointerEvents = "auto"; }
+    // NOTE: video is intentionally NOT paused → background music keeps playing
+  };
+  const fallback = ()=>{
+    if(done) return; done = true;
+    if(mode==="recv"){ go("recvcard"); return; }
+    stage.innerHTML = viewMoon();
+    runMoon(()=>go("preview"));
+  };
+  if(!v){ fallback(); return; }
+  let started = false;
+  // primary trigger: reveal the card at CARD_AT (the video's black moment)
+  v.addEventListener("timeupdate", ()=>{ if(v.currentTime >= CARD_AT) reveal(); });
+  // timeupdate는 약 0.25초 간격이라, 음악 끝(15초)에 카드가 정확히 완성되도록 0.05초 간격으로도 확인
+  const tick = setInterval(()=>{ if(done || !document.body.contains(v)){ clearInterval(tick); return; } if(v.currentTime >= CARD_AT) reveal(); }, 50);
+  v.addEventListener("ended", reveal);          // safety if video ends before CARD_AT
+  v.addEventListener("error", fallback);        // file missing / decode error
+  v.addEventListener("playing", ()=>{ started = true; });
+  setTimeout(()=>{ if(!started && !done) fallback(); }, 6000);
+  // play WITH sound (background music). Creator flow has a click gesture so this is allowed;
+  // if a browser blocks unmuted autoplay (e.g. recipient link), retry muted so it still plays.
+  v.muted = false;
+  let p; try{ p = v.play(); }catch(e){}
+  if(p && p.catch) p.catch(()=>{ v.muted = true; try{ v.play(); }catch(e){} });
+  stage._introFinish = reveal;   // skip button reveals the card immediately
+}
+
+/* moon progress loader (fallback when no video) */
+function runMoon(next){
+  clearInterval(_iv);
+  const t0 = Date.now();
+  _iv = setInterval(()=>{
+    const p = Math.min(100, Math.round((Date.now()-t0)/2600*100));
+    const ring = document.getElementById("ring");
+    const pct = document.getElementById("pct");
+    if(ring) ring.style.strokeDashoffset = (395.8*(1-p/100)).toFixed(1);
+    if(pct) pct.textContent = p + "%";
+    if(p>=100){ clearInterval(_iv); clearTimeout(_to); _to = setTimeout(next, 450); }
+  }, 60);
+}
+
+function toast(msg, ms){
+  let el = document.getElementById("toast");
+  if(!el){ el = document.createElement("div"); el.id="toast"; el.className="toast"; stage.appendChild(el); }
+  el.textContent = msg; el.classList.add("show");
+  clearTimeout(_ct); _ct = setTimeout(hideToast, ms || 1900);
+}
+function hideToast(){
+  clearTimeout(_ct);
+  const el = document.getElementById("toast"); if(el) el.classList.remove("show");
+}
+
+/* centered popup: icon + message, auto-hides */
+function popup(msg, icon, sub){
+  let el = document.getElementById("popup");
+  if(!el){
+    el = document.createElement("div"); el.id="popup"; el.className="popup";
+    el.innerHTML = '<div class="popup-box"><div class="popup-ic"></div><div class="popup-tx"></div><div class="popup-sub"></div></div>';
+    stage.appendChild(el);
+  }
+  el.querySelector(".popup-ic").textContent = icon || "✅";
+  el.querySelector(".popup-tx").textContent = msg;
+  const sb = el.querySelector(".popup-sub"); sb.textContent = sub || ""; sb.style.display = sub ? "" : "none";
+  el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
+  clearTimeout(_pt); _pt = setTimeout(()=>el.classList.remove("show"), 1800);
+}
+/* brief press feedback on any .ap-btn */
+function pressFx(btn){
+  if(!btn) return;
+  btn.classList.remove("pressed"); void btn.offsetWidth; btn.classList.add("pressed");
+  btn.addEventListener("animationend", ()=>btn.classList.remove("pressed"), {once:true});
+}
+
+/* ---- card PNG ----
+   Rendered once per card (pre-warmed when the share screen opens) so the save
+   button can hand the file to the OS immediately, inside the tap's user-activation
+   window (iOS Safari refuses share/save pickers that start after long async work). */
+let _png = null, _pngKey = "";
+const PNG_NAME = "GSK_크리스마스카드.png";
+function pngKey(){ return JSON.stringify([S.theme, S.to, S.from, S.message]); }
+async function buildPng(){
+  const wrap = document.getElementById("capture");
+  /* capture only the card itself (template aspect ratio), not the blurred letterbox fill */
+  const node = wrap && (wrap.querySelector(".cf-card") || wrap);
+  if(!node || !window.html2canvas) return null;
+  if(document.fonts && document.fonts.ready) await document.fonts.ready;
+  const T = THEME[S.theme] || THEMES[0];
+  const scale = Math.max(2, Math.min(4, T.w / node.getBoundingClientRect().width));
+  const canvas = await html2canvas(node, { scale, useCORS:true, backgroundColor:null, logging:false });
+  return await new Promise(res => canvas.toBlob(res, "image/png"));
+}
+function prewarmPng(){
+  const k = pngKey();
+  if(_pngKey === k && _png) return _png;
+  _pngKey = k; _png = buildPng().catch(()=>null);
+  return _png;
+}
+function isMobile(){
+  const ua = navigator.userAgent || "";
+  return /Android|iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+}
+
+async function saveImage(){
+  if(!window.html2canvas){ toast("저장을 사용할 수 없어요"); return; }
+  const ready = _pngKey === pngKey() && _png;
+  if(!ready) toast("이미지를 만드는 중…", 15000);
+  const blob = await prewarmPng();
+  hideToast();
+  if(!blob){ toast("저장 중 문제가 발생했어요"); return; }
+  const file = new File([blob], PNG_NAME, { type:"image/png" });
+
+  if(isMobile()){
+    /* Mobile: hand the PNG to the OS share sheet. iPhone shows "이미지 저장" → 사진 보관함,
+       Android shows 갤러리/Google 포토 등. A web page cannot write to the photo library directly. */
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      try{
+        await navigator.share({ files:[file], title:"GSK 크리스마스 메시지 카드" });
+        popup("카드 이미지가 저장되었어요", "🖼️", "사진 보관함을 확인해 주세요");
+        return;
+      }catch(e){ if(e && e.name === "AbortError") return; /* else fall through */ }
+    }
+    /* Fallback (in-app browsers, old Android): full-screen image, long-press to save */
+    showImageSheet(URL.createObjectURL(blob));
+    return;
+  }
+
+  /* Desktop: native "save as" dialog when available (Chrome/Edge), else a normal download */
+  if(window.showSaveFilePicker){
+    try{
+      const h = await showSaveFilePicker({ suggestedName:PNG_NAME, types:[{ description:"PNG 이미지", accept:{ "image/png":[".png"] } }] });
+      const w = await h.createWritable(); await w.write(blob); await w.close();
+      popup("카드 이미지가 저장되었어요", "🖼️", "Image saved");
+      return;
+    }catch(e){ if(e && e.name === "AbortError") return; /* else fall through */ }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = PNG_NAME;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  popup("카드 이미지가 저장되었어요", "🖼️", "Image saved");
+}
+
+/* full-screen image viewer used when the OS share sheet isn't available */
+function showImageSheet(url){
+  let el = document.getElementById("imgsheet"); if(el) el.remove();
+  el = document.createElement("div"); el.id = "imgsheet"; el.className = "imgsheet";
+  el.innerHTML = `<div class="imgsheet-top"><span>이미지를 길게 눌러<br><b>'이미지 저장'</b>을 선택하세요</span><div class="ap-btn imgsheet-x">닫기</div></div>
+    <img src="${url}" alt="카드 이미지">`;
+  el.querySelector(".imgsheet-x").addEventListener("click", ()=>{ el.remove(); URL.revokeObjectURL(url); });
+  stage.appendChild(el);
+}
+
+/* shareable link carries the card data so the recipient sees video → card */
+/* Compact link format  #k=<base64url>
+   payload: [themeIndex, to, from, message]  — message is a preset index (number) when it
+   matches a recommended phrase, otherwise the text itself. base64url keeps Korean at ~4
+   chars per syllable instead of the 9 that percent-encoding needs. The old #c= JSON links
+   are still accepted. */
+function b64uEnc(str){ const b = new TextEncoder().encode(str); let bin=""; b.forEach(x=>bin+=String.fromCharCode(x)); return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+function b64uDec(str){ str = str.replace(/-/g,"+").replace(/_/g,"/"); while(str.length%4) str+="="; const bin = atob(str); const b = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return new TextDecoder().decode(b); }
+function encodeCard(){
+  const ti = Math.max(0, THEMES.findIndex(t=>t.id===S.theme));
+  const pi = PRESETS.findIndex(p=>p.text===S.message);
+  return b64uEnc(JSON.stringify([ti, S.to, S.from, pi>=0 ? pi : S.message]));
+}
+function shareURL(){ return location.origin + location.pathname + location.search + "#k=" + encodeCard(); }
+function parseShared(){
+  const h = location.hash || "";
+  if(h.indexOf("#k=")===0){
+    try{
+      const a = JSON.parse(b64uDec(h.slice(3)));
+      const theme = (THEMES[a[0]] || THEMES[0]).id;
+      const m = typeof a[3]==="number" ? (PRESETS[a[3]] ? PRESETS[a[3]].text : "") : (a[3]||"");
+      return { t:theme, o:a[1]||"", f:a[2]||"", m };
+    }catch(e){}
+  }
+  if(h.indexOf("#c=")===0){ try{ return JSON.parse(decodeURIComponent(h.slice(3))); }catch(e){} }
+  return null;
+}
+
+/* copy the share link to the clipboard (no system share sheet) */
+async function shareCard(){
+  const url = shareURL();
+  try{ await navigator.clipboard.writeText(url); }
+  catch(e){
+    /* fallback for browsers without the async clipboard API */
+    try{
+      const ta = document.createElement("textarea"); ta.value = url; ta.setAttribute("readonly","");
+      ta.style.cssText = "position:fixed;opacity:0;top:0;left:0"; document.body.appendChild(ta);
+      ta.select(); ta.setSelectionRange(0, url.length); document.execCommand("copy"); ta.remove();
+    }catch(e2){ toast("링크 복사를 사용할 수 없어요"); return; }
+  }
+  popup("공유 링크가 복사되었어요", "🔗", "Link copied");
+}
+
+async function copyLink(){
+  try{ await navigator.clipboard.writeText(shareURL()); popup("공유 링크가 복사되었어요", "🔗", "Link copied"); }
+  catch(e){ toast("복사를 사용할 수 없어요"); }
+}
+
+function restart(){
+  S.theme="t1"; S.to=""; S.from=""; S.message="";
+  try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+  go("home");
+}
+
+/* ---------------- screens ---------------- */
+function viewHome(){
+  return `<div class="screen active" style="background:#0b0f23;overflow:hidden">
+    <video data-bg src="assets/home-loop.mp4" poster="assets/home-poster.jpg" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true" disablepictureinpicture style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none"></video>
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,11,28,.80) 0%,rgba(8,11,28,.66) 22%,rgba(8,11,28,.40) 36%,rgba(8,11,28,.10) 46%,rgba(8,11,28,0) 52%,rgba(8,11,28,0) 80%,rgba(8,11,28,.55) 100%)"></div>
+    <div style="position:absolute;inset:0 0 52% 0;background:linear-gradient(90deg,rgba(8,11,28,.55) 0%,rgba(8,11,28,.30) 55%,rgba(8,11,28,0) 85%);-webkit-mask-image:linear-gradient(180deg,#000 70%,transparent);mask-image:linear-gradient(180deg,#000 70%,transparent)"></div>
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;padding:max(72px, calc(28px + env(safe-area-inset-top))) 30px max(40px, calc(22px + env(safe-area-inset-bottom)))">
+      <div style="display:flex;align-items:center;gap:9px;animation:ap-fade .6s ease both;filter:drop-shadow(0 2px 10px rgba(6,9,24,.75))">
+        ${logo(24)}
+      </div>
+      <div style="margin-top:26px;text-shadow:0 2px 14px rgba(6,9,24,.7)">
+        <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#f3c96b;margin-bottom:14px;animation:ap-fade .7s .1s ease both">MERRY CHRISTMAS 2026</div>
+        <h1 style="margin:0;font-family:var(--sans);font-weight:700;font-size:36px;line-height:1.38;color:#fdf6e8;animation:ap-fade .7s .2s ease both">당신의 마음을<br>전달하세요</h1>
+        <p style="margin:14px 0 0;font-size:14px;line-height:1.6;color:rgba(251,241,220,.86);max-width:260px;animation:ap-fade .7s .35s ease both">정성껏 만든 크리스마스 메시지 카드로<br>소중한 분께 따뜻한 안부를 전해보세요.</p>
+        <p style="margin:8px 0 0;font-size:12px;letter-spacing:.3px;color:rgba(243,201,107,.8);font-style:italic;animation:ap-fade .7s .45s ease both">Deliver your heart this Christmas</p>
+      </div>
+      <div style="flex:1"></div>
+      <div class="ap-btn" data-go="themes" style="animation:ap-fade .7s .55s ease both;border-radius:18px;background:linear-gradient(135deg,#e0393e,#b5122c);box-shadow:0 12px 30px rgba(181,18,44,.4);padding:17px;text-align:center">
+        <div style="font-size:16px;font-weight:700;color:#fff;letter-spacing:.3px">메시지 카드 만들기</div>
+        <div style="font-size:11px;font-weight:500;color:rgba(255,255,255,.82);margin-top:2px">Create a message card</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function viewThemes(){
+  const cells = THEMES.map(t=>{
+    const sel = t.id===S.theme;
+    return `<div class="ap-cell" data-theme="${t.id}" style="display:flex;align-items:center;justify-content:center;min-height:0;min-width:0;overflow:hidden">
+      <div style="position:relative;display:inline-flex;max-width:100%;max-height:100%;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.14)${sel?';outline:3px solid #b5122c;outline-offset:-3px':''}">
+        <img src="${t.img}" alt="" style="max-width:100%;max-height:100%;width:auto;height:auto;display:block">
+        ${sel?`<div style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:#b5122c;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.25);animation:ap-pop .25s ease both"><svg width="13" height="13" viewBox="0 0 13 13"><path d="M2 7l3 3 6-7" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`:``}
+      </div>
+    </div>`;
+  }).join("");
+  return `<div class="screen active" style="background:#fbf6ee">
+    <div style="padding:max(56px, calc(16px + env(safe-area-inset-top))) 24px 10px;animation:ap-fade .4s ease both">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><span class="step">STEP 1 / 4</span>${logo(16)}</div>
+      <div class="barbg"><div class="barfg" style="width:25%"></div></div>
+      <h2 class="h2" style="margin:12px 0 2px">카드 테마 선택</h2>
+      <p class="sub">마음에 드는 크리스마스 카드 디자인을 골라주세요 · Choose a theme</p>
+    </div>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;padding:4px 22px 10px">${cells}</div>
+    <div style="display:flex;gap:10px;padding:10px 22px calc(24px + env(safe-area-inset-bottom));background:#fbf6ee;border-top:1px solid rgba(0,0,0,.05)">
+      <div class="ap-btn ghost" data-go="home" style="flex:0 0 92px">Back</div>
+      <div class="ap-btn cta" data-go="message" style="flex:1"><span>OK · 선택 완료</span></div>
+    </div>
+  </div>`;
+}
+
+function viewMessage(){
+  const chips = PRESETS.map(p=>`<div class="ap-btn chip${p.text===S.message?' on':''}" data-preset="${esc(p.text)}">${p.label}</div>`).join("");
+  return `<div class="screen active" style="background:#fbf6ee">
+    <div style="padding:max(64px, calc(20px + env(safe-area-inset-top))) 24px 8px;animation:ap-fade .4s ease both">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span class="step">STEP 2 / 4</span>${logo(16)}</div>
+      <div class="barbg"><div class="barfg" style="width:50%"></div></div>
+      <h2 class="h2">메시지 작성</h2>
+      <p class="sub">소중한 분께 전할 마음을 적어주세요</p>
+    </div>
+    <div class="scroll" style="padding:6px 24px 36px">
+      ${previewHTML()}
+      <label class="lbl">받는 분</label>
+      <input id="in-to" class="field" value="${esc(S.to)}" placeholder="예) 김민정 선생님" style="margin-bottom:14px">
+      <label class="lbl" style="display:flex;justify-content:space-between;align-items:baseline">메시지 <span id="msg-count" style="font-weight:500;letter-spacing:0;color:#bcb3a3;font-size:10px">최대 ${MAX_LINES}줄 · 0/${MAX_LINES}</span></label>
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:#c4bba9;margin:0 0 7px">추천 문구</div>
+        <div class="chips">${chips}</div>
+      </div>
+      <textarea id="in-msg" class="field" rows="5" placeholder="메시지를 입력하세요." style="line-height:1.7;font-family:var(--sans);resize:none;margin-bottom:6px">${esc(S.message)}</textarea>
+      <div id="msg-hint" style="font-size:10.5px;color:#bcb3a3;margin:0 0 14px;line-height:1.5">${MSG_HINT}</div>
+      <label class="lbl">보내는 분</label>
+      <input id="in-from" class="field" value="${esc(S.from)}" placeholder="예) 이재훈 드림">
+    </div>
+    <div style="display:flex;gap:10px;padding:12px 22px max(24px, calc(14px + env(safe-area-inset-bottom)));background:#fbf6ee;border-top:1px solid rgba(0,0,0,.05)">
+      <div class="ap-btn ghost" data-go="themes" style="flex:0 0 92px">Back</div>
+      <div class="ap-btn cta${canMake()?'':' disabled'}" id="btn-make" style="flex:1"><span>OK · 카드 제작</span></div>
+    </div>
+  </div>`;
+}
+
+/* recipient cover: a single tap (user gesture) so the video can play WITH sound */
+function viewOpen(){
+  return `<div class="screen active" style="background:#0b0f23;overflow:hidden">
+    <video data-bg src="assets/home-loop.mp4" poster="assets/home-poster.jpg" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true" disablepictureinpicture style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none"></video>
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,11,28,.80) 0%,rgba(8,11,28,.66) 22%,rgba(8,11,28,.40) 36%,rgba(8,11,28,.10) 46%,rgba(8,11,28,0) 52%,rgba(8,11,28,0) 80%,rgba(8,11,28,.55) 100%)"></div>
+    <div style="position:absolute;inset:0 0 52% 0;background:linear-gradient(90deg,rgba(8,11,28,.55) 0%,rgba(8,11,28,.30) 55%,rgba(8,11,28,0) 85%);-webkit-mask-image:linear-gradient(180deg,#000 70%,transparent);mask-image:linear-gradient(180deg,#000 70%,transparent)"></div>
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;padding:max(76px, calc(32px + env(safe-area-inset-top))) 30px 0;animation:ap-fade .6s ease both;text-shadow:0 2px 14px rgba(6,9,24,.75)">
+      <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#f3c96b">MERRY CHRISTMAS 2026</div>
+      <h1 style="margin:16px 0 0;font-family:var(--sans);font-weight:700;font-size:27px;line-height:1.5;color:#fdf6e8">${senderName() ? esc(withSubject(senderName()))+" 드리는<br>" : ""}따뜻한 크리스마스 마음이<br>도착했어요</h1>
+      <p style="margin:14px 0 0;font-size:12.5px;color:rgba(251,241,220,.78)">버튼을 누르면 영상과 카드가 재생됩니다</p>
+    </div>
+    <div style="position:relative;padding:0 30px calc(46px + env(safe-area-inset-bottom));animation:ap-fade .7s .2s ease both">
+      <div class="ap-btn" data-go="recv" style="border-radius:18px;background:linear-gradient(135deg,#e0393e,#b5122c);box-shadow:0 12px 30px rgba(181,18,44,.4);padding:18px;text-align:center">
+        <div style="font-size:17px;font-weight:700;color:#fff;letter-spacing:.3px">카드 열기 ▶</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.82);margin-top:2px">Open your card</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* video intro screen (mode: 'make' | 'recv').
+   The card + actions sit on top of the (still-playing) video, hidden until CARD_AT. */
+function viewIntro(mode){
+  const caption = mode==="recv"
+    ? (senderName() ? esc(senderName())+"의 마음이 도착했어요." : "크리스마스 마음이 도착했어요.")
+    : "카드를 제작하고 있어요";
+  const actions = mode==="recv" ? `
+      <div style="position:absolute;top:calc(18px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:rgba(0,0,0,.34);border-radius:999px;padding:6px 14px;color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.5px">💌 도착한 크리스마스 카드</div>
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:16px 22px calc(28px + env(safe-area-inset-bottom));display:flex;gap:10px;background:linear-gradient(to top,rgba(0,0,0,.5),transparent)">
+        <div class="ap-btn cta" data-act="save" style="flex:1"><span>⬇️ 카드 이미지 저장</span></div>
+      </div>` : `
+      <div style="position:absolute;top:calc(18px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:rgba(0,0,0,.32);border-radius:999px;padding:6px 14px;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px">완성된 카드</div>
+      <div style="position:absolute;left:0;right:0;bottom:0;padding:16px 22px calc(28px + env(safe-area-inset-bottom));display:flex;gap:10px">
+        <div class="ap-btn ghost" data-go="message" style="flex:0 0 104px;background:rgba(255,255,255,.92);font-size:13px">수정</div>
+        <div class="ap-btn cta" data-go="share" style="flex:1"><span>OK · 카드 확정</span></div>
+      </div>`;
+  return `<div class="screen active" data-intro="${mode}" style="background:#05070f;overflow:hidden">
+    <video id="intro" playsinline preload="auto" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"><source src="${VIDEO_SRC}" type="video/mp4"></video>
+
+    <div id="capture" style="position:absolute;inset:0;opacity:0;transition:opacity 1s ease;pointer-events:none">${cardFace({theme:S.theme, variant:"full", to:S.to, from:S.from, message:S.message})}</div>
+    <div id="introActions" style="position:absolute;inset:0;opacity:0;transition:opacity .7s ease .25s;pointer-events:none">${actions}</div>
+
+    <div id="introControls" style="position:absolute;inset:0;transition:opacity .5s ease">
+      <div style="position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(to top,rgba(5,7,15,.7),transparent);pointer-events:none"></div>
+      <div style="position:absolute;left:0;right:0;bottom:calc(40px + env(safe-area-inset-bottom));text-align:center;color:rgba(255,255,255,.9);font-family:var(--sans);font-size:16px;pointer-events:none">${caption}</div>
+    </div>
+  </div>`;
+}
+
+/* moon progress loader (fallback when no video file) */
+function viewMoon(){
+  return `<div class="screen active" style="background:linear-gradient(180deg,#26305a 0%,#1b2240 60%,#10162e 100%);overflow:hidden;align-items:center;justify-content:center;padding:40px">
+    <svg viewBox="0 0 402 874" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%"><g fill="#fbf1dc"><circle cx="60" cy="200" r="1.6" style="animation:ap-twinkle 3.2s ease-in-out infinite"/><circle cx="340" cy="160" r="1.3" style="animation:ap-twinkle 4s .5s ease-in-out infinite"/><circle cx="300" cy="700" r="1.5" style="animation:ap-twinkle 3.6s 1s ease-in-out infinite"/><circle cx="80" cy="680" r="1.2" style="animation:ap-twinkle 4.4s .3s ease-in-out infinite"/></g></svg>
+    <div style="position:absolute;bottom:120px;left:0;right:0;height:200px;pointer-events:none">
+      <div style="position:absolute;left:18%;bottom:0;font-size:26px;animation:ap-float 3.4s ease-in infinite">🎄</div>
+      <div style="position:absolute;left:46%;bottom:0;font-size:20px;animation:ap-float 3.8s .8s ease-in infinite">🎁</div>
+      <div style="position:absolute;left:70%;bottom:0;font-size:22px;animation:ap-float 4.2s 1.6s ease-in infinite">⛄</div>
+      <div style="position:absolute;left:32%;bottom:0;font-size:18px;animation:ap-float 3.6s 2.2s ease-in infinite">✦</div>
+    </div>
+    <div style="position:relative;width:142px;height:142px;margin-bottom:34px">
+      <svg width="142" height="142" viewBox="0 0 142 142" style="transform:rotate(-90deg)">
+        <circle cx="71" cy="71" r="63" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="6"/>
+        <circle id="ring" cx="71" cy="71" r="63" fill="none" stroke="url(#apg)" stroke-width="6" stroke-linecap="round" stroke-dasharray="395.8" stroke-dashoffset="395.8" style="transition:stroke-dashoffset .12s linear"/>
+        <defs><linearGradient id="apg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3c96b"/><stop offset="1" stop-color="#b5122c"/></linearGradient></defs>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;animation:ap-glow 3s ease-in-out infinite">🎄</div>
+    </div>
+    <div id="pct" style="position:relative;font-size:13px;font-weight:700;letter-spacing:2px;color:#f3c96b;margin-bottom:8px">0%</div>
+    <h2 style="position:relative;margin:0;font-family:var(--sans);font-size:23px;font-weight:700;color:#fdf6e8;text-align:center">카드를 제작 중입니다</h2>
+    <p style="position:relative;margin:10px 0 0;font-size:13px;color:rgba(251,241,220,.62);text-align:center">정성스레 마음을 담고 있어요<br><span style="font-style:italic;color:rgba(243,201,107,.6)">Crafting your card…</span></p>
+  </div>`;
+}
+
+/* full-screen finished card with floating controls */
+function viewPreview(){
+  return `<div class="screen active" style="background:#05070f">
+    <div id="capture" style="position:absolute;inset:0;animation:ap-fade .8s ease both">${cardFace({theme:S.theme, variant:"full", to:S.to, from:S.from, message:S.message})}</div>
+    <div style="position:absolute;top:calc(18px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:rgba(0,0,0,.32);border-radius:999px;padding:6px 14px;color:#fff;font-size:11px;font-weight:700;letter-spacing:1px">STEP 3 / 4 · 완성된 카드</div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:16px 22px calc(28px + env(safe-area-inset-bottom));display:flex;gap:10px;background:linear-gradient(to top,rgba(0,0,0,.45),transparent)">
+      <div class="ap-btn ghost" data-go="message" style="flex:0 0 104px;background:rgba(255,255,255,.92);font-size:13px">수정</div>
+      <div class="ap-btn cta" data-go="share" style="flex:1"><span>OK · 카드 확정</span></div>
+    </div>
+  </div>`;
+}
+
+/* full-screen card + share bottom sheet */
+function viewShare(){
+  return `<div class="screen active" style="background:#05070f">
+    <div id="capture" style="position:absolute;inset:0">${cardFace({theme:S.theme, variant:"full", to:S.to, from:S.from, message:S.message})}</div>
+    <div class="scroll" style="position:absolute;left:0;right:0;bottom:0;max-height:64%;background:#fbf6ee;border-radius:24px 24px 0 0;box-shadow:0 -12px 34px rgba(0,0,0,.3);padding:14px 22px calc(20px + env(safe-area-inset-bottom));animation:ap-rise .5s cubic-bezier(.2,.8,.2,1) both">
+      <div style="width:42px;height:4px;border-radius:99px;background:#e0d6c4;margin:0 auto 12px"></div>
+      <div style="text-align:center;margin-bottom:16px"><span class="step">STEP 4 / 4</span><h2 class="h2" style="margin:6px 0 2px">카드 전달</h2><p class="sub">영상과 메시지 카드를 함께 보낼 수 있어요</p></div>
+      <div class="ap-btn" data-act="share" style="width:100%;border-radius:16px;background:#fee500;box-shadow:0 8px 20px rgba(254,229,0,.4);padding:16px;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:11px">
+        <span style="font-size:18px">💌</span><span style="font-size:15px;font-weight:700;color:#3c1e1e">영상+카드 공유하기</span>
+      </div>
+      <div class="ap-btn" data-act="save" style="width:100%;border-radius:16px;background:linear-gradient(135deg,#e0393e,#b5122c);box-shadow:0 8px 20px rgba(181,18,44,.32);padding:15px;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:4px">
+        <span style="font-size:17px">⬇️</span><span style="font-size:15px;font-weight:700;color:#fff">카드 이미지 저장</span>
+      </div>
+      <div class="ap-btn" data-act="restart" style="margin-top:18px;text-align:center;font-size:13px;font-weight:600;color:#a59c8d;text-decoration:underline;text-underline-offset:3px">처음으로 돌아가기 · Start over</div>
+    </div>
+  </div>`;
+}
+
+/* recipient view: shown after the greeting video on a shared link */
+function viewRecvCard(){
+  return `<div class="screen active" style="background:#05070f">
+    <div id="capture" style="position:absolute;inset:0;animation:ap-rise .9s cubic-bezier(.2,.8,.2,1) both">${cardFace({theme:S.theme, variant:"full", to:S.to, from:S.from, message:S.message})}</div>
+    <div style="position:absolute;top:calc(18px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:rgba(0,0,0,.34);border-radius:999px;padding:6px 14px;color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.5px">💌 도착한 크리스마스 카드</div>
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:16px 22px calc(28px + env(safe-area-inset-bottom));display:flex;gap:10px;background:linear-gradient(to top,rgba(0,0,0,.5),transparent)">
+      <div class="ap-btn cta" data-act="save" style="flex:1"><span>⬇️ 카드 이미지 저장</span></div>
+    </div>
+  </div>`;
+}
+
+/* re-measure once the card webfont is actually available, and on resize */
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>fitCards());
+let _fitT; addEventListener("resize", ()=>{ clearTimeout(_fitT); _fitT=setTimeout(()=>fitCards(), 120); });
+
+/* ---------------- render & events ---------------- */
+function render(){
+  let html = "";
+  switch(S.screen){
+    case "home": html = viewHome(); break;
+    case "themes": html = viewThemes(); break;
+    case "message": html = viewMessage(); break;
+    case "open": html = viewOpen(); break;
+    case "making": html = viewIntro("make"); break;
+    case "recv": html = viewIntro("recv"); break;
+    case "preview": html = viewPreview(); break;
+    case "share": html = viewShare(); break;
+    case "recvcard": html = viewRecvCard(); break;
+  }
+  stage.innerHTML = html;
+  fitCards();
+  /* looping background video (home + recipient landing): must be muted to autoplay on phones */
+  stage.querySelectorAll("video[data-bg]").forEach(v=>{ v.muted = true; v.defaultMuted = true; const p = v.play(); if(p && p.catch) p.catch(()=>{}); });
+
+  if(S.screen === "making") setupIntro("make");
+  if(S.screen === "recv") setupIntro("recv");
+  if(S.screen === "share") setTimeout(prewarmPng, 250);
+
+  if(S.screen === "message"){
+    const to = document.getElementById("in-to");
+    const from = document.getElementById("in-from");
+    const msg = document.getElementById("in-msg");
+    const btn = document.getElementById("btn-make");
+    const refreshBtn = ()=>{ btn.classList.toggle("disabled", !canMake()); };
+    const sync = ()=>{ if(S.screen!=="message") return; updatePreview(); refreshCount(); refreshBtn(); };
+    sync();
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(sync);
+    to.addEventListener("input", e=>{ S.to = e.target.value.slice(0,24); updatePreview(); refreshBtn(); });
+    from.addEventListener("input", e=>{ S.from = e.target.value.slice(0,24); updatePreview(); refreshBtn(); });
+    msg.addEventListener("input", e=>{
+      let v = e.target.value; const ls = v.split("\n");
+      if(ls.length>MAX_LINES) v = ls.slice(0,MAX_LINES).join("\n");
+      v = v.slice(0,120);
+      if(v!==e.target.value) e.target.value = v;
+      S.message = v; updatePreview(); refreshBtn(); refreshChips(); refreshCount();
+    });
+  }
+}
+
+/* live-update message screen preview without full re-render (keeps focus) */
+function updatePreview(){
+  const holder = document.getElementById("pv-card");
+  if(holder){
+    holder.innerHTML = cardFace({theme:S.theme, variant:"mini", width:previewGeom().cardW, to:S.to, from:S.from, message:S.message});
+    S.vlines = measureLines(holder);
+    fitCards(holder);
+  }
+}
+
+/* ---- message-screen preview (cropped to the message panel) + zoom popup ---- */
+function previewGeom(){
+  const T = THEME[S.theme] || THEMES[0];
+  const stageW = stage.clientWidth || 402;
+  const cardW = Math.round(stageW * PV_SCALE), cardH = cardW * T.h / T.w;
+  const [pt, pr, pb, pl] = T.pad;
+  const t = Math.max(0, pt - PV_MARGIN), r = Math.max(0, pr - PV_MARGIN), b = Math.max(0, pb - PV_MARGIN), l = Math.max(0, pl - PV_MARGIN);
+  return { cardW, cardH, boxW: cardW * (100 - l - r) / 100, boxH: cardH * (100 - t - b) / 100, offX: -cardW * l / 100, offY: -cardH * t / 100 };
+}
+function previewHTML(){
+  const g = previewGeom();
+  return `<div class="pv-wrap" id="pv-wrap" style="width:${g.boxW.toFixed(1)}px;height:${g.boxH.toFixed(1)}px">
+        <div class="pv-card" id="pv-card" style="left:${g.offX.toFixed(1)}px;top:${g.offY.toFixed(1)}px;width:${g.cardW}px;height:${g.cardH.toFixed(1)}px">${cardFace({theme:S.theme, variant:"mini", width:g.cardW, to:S.to, from:S.from, message:S.message})}</div>
+        <div class="pv-hint">🔍 탭하면 크게 보기</div>
+      </div>`;
+}
+function openZoom(){
+  if(document.getElementById("zoom")) return;
+  const src = document.querySelector("#pv-card .cf-card"); if(!src) return;
+  const T = THEME[S.theme] || THEMES[0];
+  const stageW = stage.clientWidth, stageH = stage.clientHeight;
+  const w = Math.min(stageW * 0.86, stageH * 0.76 * T.w / T.h), h = w * T.h / T.w;
+  const el = document.createElement("div"); el.id = "zoom"; el.className = "zoom";
+  el.innerHTML = `<div class="zoom-card" style="width:${w.toFixed(1)}px;height:${h.toFixed(1)}px">${cardFace({theme:S.theme, variant:"full", width:w, to:S.to, from:S.from, message:S.message})}</div>
+    <div class="zoom-cap">화면을 탭하면 닫혀요</div>`;
+  stage.appendChild(el);
+  fitCards(el);
+  /* FLIP: start at the preview card's position/size, animate to the centered full card */
+  const card = el.querySelector(".zoom-card");
+  const a = src.getBoundingClientRect(), b = card.getBoundingClientRect();
+  const sx = a.width / b.width;
+  const dx = (a.left + a.width/2) - (b.left + b.width/2), dy = (a.top + a.height/2) - (b.top + b.height/2);
+  card.style.transition = "none";
+  card.style.transform = `translate(${dx}px, ${dy}px) scale(${sx})`;
+  card.style.opacity = ".9";
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    card.style.transition = ""; card.style.transform = "none"; card.style.opacity = "1"; el.classList.add("on");
+  }));
+  el.addEventListener("click", closeZoom);
+}
+function closeZoom(){
+  const el = document.getElementById("zoom"); if(!el || el.dataset.closing) return;
+  el.dataset.closing = "1";
+  const card = el.querySelector(".zoom-card"), src = document.querySelector("#pv-card .cf-card");
+  el.classList.remove("on");
+  if(src){
+    const a = src.getBoundingClientRect(), b = card.getBoundingClientRect();
+    const sx = a.width / b.width;
+    const dx = (a.left + a.width/2) - (b.left + b.width/2), dy = (a.top + a.height/2) - (b.top + b.height/2);
+    card.style.transform = `translate(${dx}px, ${dy}px) scale(${sx})`;
+  }
+  card.style.opacity = "0";
+  setTimeout(()=>el.remove(), 450);
+}
+/* update theme selection in place (preserves scroll position) */
+function refreshThemeSel(){
+  stage.querySelectorAll("[data-theme]").forEach(cell=>{
+    const id = cell.getAttribute("data-theme");
+    const holder = cell.firstElementChild;
+    holder.innerHTML = cardFace({theme:id}) + (id===S.theme ? THEME_OVERLAY : "");
+  });
+}
+function refreshChips(){
+  stage.querySelectorAll(".chip").forEach(c=>{
+    c.classList.toggle("on", c.getAttribute("data-preset")===S.message);
+  });
+}
+
+/* event delegation */
+stage.addEventListener("click", e=>{
+  pressFx(e.target.closest(".ap-btn"));
+  if(e.target.closest("#pv-wrap")){ openZoom(); return; }
+  const goEl = e.target.closest("[data-go]");
+  if(goEl){ go(goEl.getAttribute("data-go")); return; }
+
+  const themeEl = e.target.closest("[data-theme]");
+  if(themeEl){ S.theme = themeEl.getAttribute("data-theme"); render(); return; }
+
+  const presetEl = e.target.closest("[data-preset]");
+  if(presetEl){
+    S.message = presetEl.getAttribute("data-preset");
+    const ta = document.getElementById("in-msg"); if(ta) ta.value = S.message;
+    updatePreview(); refreshChips(); refreshCount();
+    const btn = document.getElementById("btn-make"); if(btn) btn.classList.toggle("disabled", !canMake());
+    return;
+  }
+
+  const makeEl = e.target.closest("#btn-make");
+  if(makeEl){ startMaking(); return; }
+
+  const actEl = e.target.closest("[data-act]");
+  if(actEl){
+    const a = actEl.getAttribute("data-act");
+    if(a==="save") saveImage();
+    else if(a==="share") shareCard();
+    else if(a==="copy") copyLink();
+    else if(a==="sms") toast("문자 메시지 앱을 여는 중…");
+    else if(a==="email") toast("이메일 앱을 여는 중…");
+    else if(a==="restart") restart();
+    else if(a==="skip"){ if(stage._introFinish) stage._introFinish(); }
+    return;
+  }
+});
+
+/* Sender as shown to the recipient.
+   1) drop sign-off words:  "이재훈 드림" → "이재훈",  "GSK 아보다트팀 일동" → "GSK 아보다트팀"
+   2) a personal name (2–4 Hangul syllables, nothing else) gets 님:  "이재훈" → "이재훈님"
+      anything else (team / department / company, English, spaces, digits) stays as typed
+   3) the 이/가 particle follows the last syllable's final consonant */
+const SIGNOFF = /\s*(드림|올림|배상|일동|拜上|敬具)\s*$/;
+function senderName(){
+  let n = (S.from||"").trim().replace(SIGNOFF,"").replace(/\s+/g," ").trim();
+  if(!n) return "";
+  const isPerson = /^[가-힣]{2,4}$/.test(n) && !/(팀|부|실|과|원|국|처|점|사|센터|그룹|본부|병원|의원|약국)$/.test(n.slice(-2));
+  if(isPerson && !/님$/.test(n)) n += "님";
+  return n;
+}
+function withSubject(name){
+  const ch = name.charCodeAt(name.length-1);
+  const hangul = ch>=0xAC00 && ch<=0xD7A3;
+  const particle = hangul ? (((ch-0xAC00)%28) ? "이" : "가") : "이";
+  return name + particle;
+}
+/* boot: if the URL carries a shared card, show recipient flow (video → card) */
+function boot(){
+  const d = parseShared();
+  if(d){ S.theme = d.t||"t1"; S.to = d.o||""; S.from = d.f||""; S.message = d.m||""; S.screen = "open"; }
+  render();
+}
+boot();
+</script>
+</body>
+</html>
